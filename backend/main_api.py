@@ -1,13 +1,17 @@
+from __future__ import annotations
+
 import io
-import numpy as np
-import tensorflow as tf
+from functools import lru_cache
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import numpy as np
+
 # Ce Module est utilisé en python pour lire des images
-from PIL import Image
 # Structure principale de FastAPI nécessaire à la réception de fichiers.
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-# Pour exécuter l'application FastAPI
-import uvicorn
 
 # 1. INITIALISATION DE L'APPLICATION ET DU MODELE
 app = FastAPI(title="API de Détection des Maladies de la pomme de terre")
@@ -21,13 +25,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Chargement du Modèle au démarrage de l'API
-MODELE = tf.keras.models.load_model('model_enregistre.keras')
 CLASS_NAMES = ['Early Blight', 'Late Blight', 'Healthy']
 IMAGE_SIZE = 256
 
+
+@lru_cache(maxsize=1)
+def load_model():
+    import tensorflow as tf
+
+    model_path = Path(__file__).with_name("model_enregistre.keras")
+    return tf.keras.models.load_model(model_path)
+
+
 # 2. FONCTION UTILITAIRE : Convertir une image reçu en un Tableau Numpy
 def read_file_as_img(data) -> np.ndarray:
+    import numpy as np
+    from PIL import Image
+
     # Lire les octets bruts  et les convertir en image PIL
     image = Image.open(io.BytesIO(data)).convert('RGB')
     # Redimensionner l'image à la taille attendue par le modèle
@@ -43,6 +57,8 @@ async def ping():
 # ROUTE DE PREDICTION
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
+    import numpy as np
+
     # Pour lire le fichier envoyé par le frontend
     bytes_data = await file.read()
 
@@ -53,7 +69,7 @@ async def predict(file: UploadFile = File(...)):
     img_batch = np.expand_dims(image, axis=0)
 
     # Prédiction avec le modèle
-    predictions = MODELE.predict(img_batch)
+    predictions = load_model().predict(img_batch)
 
     # Extraction des classes et la Confiance
     predicted_class = CLASS_NAMES[np.argmax(predictions[0])]
@@ -68,6 +84,6 @@ async def predict(file: UploadFile = File(...)):
 
 # 5. POINT D'ENTREE POUR LANCER LE SERVEUR
 if __name__ == "__main__":
+    import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8000)
-
-
