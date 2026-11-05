@@ -39,7 +39,7 @@ jobs:
       - name: Install Frontend Dependencies & Test
         run: |
           cd frontend
-          npm install
+          npm install --include=dev
           npm test -- --watchAll=false
 
       # === BUILD & PUSH DOCKER (Exécuté uniquement si les tests passent) ===
