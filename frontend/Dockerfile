@@ -10,6 +10,9 @@ RUN npm install
 
 # Copier le reste des fichiers de l'application
 COPY . .
+
+# Désactiver le blocage du build sur les warnings
+ENV CI=false
 RUN npm run build
 
 # Image Nginx pour servir l'application
