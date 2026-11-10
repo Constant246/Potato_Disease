@@ -40,7 +40,7 @@ jobs:
         run: |
           cd frontend
           npm install 
-          npx test
+          npm test -- --watchAll=false
 
       # === BUILD & PUSH DOCKER (Exécuté uniquement si les tests passent) ===
       - name: Log in to Docker Hub
