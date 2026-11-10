@@ -39,8 +39,8 @@ jobs:
       - name: Install Frontend Dependencies & Test
         run: |
           cd frontend
-          npm install --include=dev
-          npm test -- --watchAll=false
+          npm install 
+          npx react-scripts test --watchAll=false
 
       # === BUILD & PUSH DOCKER (Exécuté uniquement si les tests passent) ===
       - name: Log in to Docker Hub
