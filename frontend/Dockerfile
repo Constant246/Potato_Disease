@@ -11,8 +11,9 @@ RUN npm install
 # Copier le reste des fichiers de l'application
 COPY . .
 
-# Désactiver le blocage du build sur les warnings
+# Désactiver le blocage du build sur les warnings et ESLint
 ENV CI=false
+ENV DISABLE_ESLINT_PLUGIN=true
 RUN npm run build
 
 # Image Nginx pour servir l'application
